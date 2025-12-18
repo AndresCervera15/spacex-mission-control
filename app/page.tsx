@@ -16,7 +16,7 @@ import { useIsMobile } from "@/lib/hooks/useMediaQuery";
 export default function HomePage() {
   const { data: launches, isLoading, error, refetch } = useLaunches();
   const [selectedLaunchId, setSelectedLaunchId] = useState<string | null>(null);
-  const [filter, setFilter] = useState<FilterOption>("all");
+  const [filter, setFilter] = useState<FilterOption>("success");
   const [sort, setSort] = useState<SortOption>("newest");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 

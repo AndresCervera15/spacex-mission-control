@@ -1,3 +1,4 @@
+import React from "react";
 import { cn } from "@/lib/utils/cn";
 import type { LaunchStatus } from "@/types/launch";
 import { getStatusColor, getStatusIcon, getStatusLabel } from "@/lib/utils/status";
