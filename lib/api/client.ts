@@ -17,7 +17,6 @@ export function createAPIError(
   (error as { statusText?: string }).statusText = statusText;
   return error;
 }
-
 interface FetchConfig extends RequestInit {
   timeout?: number;
   retry?: number;
@@ -39,14 +38,21 @@ export async function fetchWithConfig<T>(
     ...fetchOptions
   } = config;
 
+  console.log(`[API] Fetching: ${url}`); // Debug log
+
   let lastError: Error | null = null;
 
-  // Retry loop
   for (let attempt = 0; attempt <= retry; attempt++) {
     try {
-      // Create abort controller for timeout
+      if (attempt > 0) {
+        console.log(`[API] Retry attempt ${attempt} for ${url}`); // Debug log
+      }
+
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      const timeoutId = setTimeout(() => {
+        console.log(`[API] Request timeout after ${timeout}ms: ${url}`); // Debug log
+        controller.abort();
+      }, timeout);
 
       const response = await fetch(url, {
         ...fetchOptions,
@@ -55,7 +61,8 @@ export async function fetchWithConfig<T>(
 
       clearTimeout(timeoutId);
 
-      // Handle HTTP errors
+      console.log(`[API] Response status ${response.status} for ${url}`); // Debug log
+
       if (!response.ok) {
         throw createAPIError(
           `HTTP ${response.status}: ${response.statusText}`,
@@ -64,18 +71,17 @@ export async function fetchWithConfig<T>(
         );
       }
 
-      // Parse JSON response
       const data = await response.json();
+      console.log(`[API] Successfully fetched data from ${url}`); // Debug log
       return data as T;
     } catch (error) {
       lastError = error as Error;
+      console.error(`[API] Error on attempt ${attempt + 1}:`, error); // Debug log
 
-      // Don't retry on certain errors
       if (isAPIError(error) && error.status && error.status < 500) {
-        throw error; // Client errors (4xx) shouldn't be retried
+        throw error;
       }
 
-      //  wait and retry if this wasn't the last attempt
       if (attempt < retry) {
         await sleep(retryDelay * (attempt + 1)); // Exponential backoff
         continue;
@@ -85,7 +91,7 @@ export async function fetchWithConfig<T>(
     }
   }
 
-  // If we get here, all retries failed
+  console.error(`[API] All retries exhausted for ${url}`); // Debug log
   throw createAPIError(
     `Request failed after ${retry + 1} attempts: ${lastError?.message}`,
     undefined,
@@ -94,7 +100,5 @@ export async function fetchWithConfig<T>(
 }
 
 export function isAPIError(error: unknown): error is APIError {
-  return (
-    error instanceof Error && error.name === "APIError" && "status" in error
-  );
+  return error instanceof Error && error.name === "APIError" && "status" in error;
 }

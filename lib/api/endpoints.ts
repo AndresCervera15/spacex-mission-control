@@ -1,7 +1,7 @@
 /**
  * SpaceX API Endpoints
  * Using the official SpaceX API v4
- * Documentation: https://github.com/r-spacex/SpaceX-API/tree/master/docs/v4
+ * Documentation: https://github.com/r-spacex/SpaceX-API/tree/master/docs
  */
 
 const BASE_URL = "https://api.spacexdata.com/v4";
@@ -23,7 +23,7 @@ export const SPACEX_API = {
 } as const;
 
 export const API_CONFIG = {
-  timeout: 10000, // 10 seconds
-  retries: 3,
-  retryDelay: 1000, // 1 second
+  timeout: 30000,
+  retries: 2,
+  retryDelay: 1000,
 } as const;
